@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO.Ports;
-using System.Threading;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -32,7 +32,7 @@ namespace Geomagnetic_Sensor_GUI_WAF_
 
 		int cols, rows; // # de columnas y filas
 
-		
+
 
 
 		//--------------------------
@@ -58,6 +58,17 @@ namespace Geomagnetic_Sensor_GUI_WAF_
 
 			}
 
+			public double Magnitude()  // Obtiene la magnitud del campo magnético usando los componentes XYZ proporcionados
+			{
+				mag = 0;
+
+				mag = x * x + y * y + z * z;
+
+				mag = Math.Sqrt(mag);
+
+				return mag;
+			}
+
 		}
 
 
@@ -65,7 +76,7 @@ namespace Geomagnetic_Sensor_GUI_WAF_
 
 
 		// Threads necesarios
-		Thread supervisor = new Thread(Check_Parameters);
+
 
 		//
 
@@ -126,15 +137,23 @@ namespace Geomagnetic_Sensor_GUI_WAF_
 			string V_no_procesado;
 
 
-			System.Windows.Forms.MessageBox.Show("Funcion de lectura");
+			//System.Windows.Forms.MessageBox.Show("Funcion de lectura");
+			Task.Delay(1000).Wait();
+
 
 			serialPort1.Write(comando_lectura);
 
-			Task.Delay(5).Wait();
+			Task.Delay(1000).Wait();
 
-			V_no_procesado = serialPort1.ReadLine();
+			//consoleTxt_box.AppendText(" " + serialPort1.ReadExisting() + " ");
 
-			componente = Convert.ToInt32(V_no_procesado);
+			V_no_procesado = serialPort1.ReadExisting();
+
+			consoleTxt_box.AppendText(V_no_procesado + " ");
+
+			componente = Convert.ToInt32(V_no_procesado, 16);
+
+			consoleTxt_box.AppendText(componente + " ");
 
 			componente = Sin_signo_a_Con_signo(componente);
 
@@ -147,15 +166,19 @@ namespace Geomagnetic_Sensor_GUI_WAF_
 
 		public void Do_reading() // Da al sensor la orden de obtener una lectura del campo magnetico
 		{
-			System.Windows.Forms.MessageBox.Show("El sensor hace una lectura");
+			//System.Windows.Forms.MessageBox.Show("El sensor hace una lectura");
 
 			serialPort1.Write(read_command);
+
+
 
 		}
 
 
 		public void GetPoint()
 		{
+			Do_reading();
+
 			Point punto = new Point(Lectura(get_x), Lectura(get_y), Lectura(get_z));
 
 			PointDB.Add(punto);
@@ -165,48 +188,43 @@ namespace Geomagnetic_Sensor_GUI_WAF_
 		public void Build_PointDB()
 		{
 
-			try
+
+
+			cols = int.Parse(cols_txtbx.Text);
+			rows = int.Parse(rows_txtbx.Text);
+
+			int k = cols * rows;
+
+			if (!serialPort1.IsOpen || cols * rows == 0)
 			{
-				cols = int.Parse(cols_txtbx.Text);
-				rows = int.Parse(rows_txtbx.Text);
+				//Should not reach here
 
-				int k = cols * rows;
+				consoleTxt_box.AppendText("No serial port connected or invalid size values");
 
-				if (!serialPort1.IsOpen || cols * rows == 0)
-				{
-					//Should not reach here
+				return;
 
-					consoleTxt_box.AppendText("No serial port connected or invalid size values");
-
-					return;
-
-
-				}
-
-				consoleTxt_box.AppendText("\n" + "Note: The model will be build in a west->East from South to North manner. Press Enter when prompted after placing the sensor in its position");
-
-
-				System.Windows.Forms.MessageBox.Show("Process is about to begin");
-
-				for (int i = 0; i < k; i++)
-				{
-					System.Windows.Forms.MessageBox.Show("Press Enter to get point: " + i.ToString());
-
-					GetPoint();
-
-					
-				}
-
-
-				System.Windows.Forms.MessageBox.Show("DataBase created Succesfully");
 
 			}
-			catch (Exception e)
-			{
 
-				consoleTxt_box.AppendText("No serial port connected");
+			consoleTxt_box.AppendText("\n" + "Note: The model will be build in a west->East from South to North manner. Press Enter when prompted after placing the sensor in its position");
+
+
+			//System.Windows.Forms.MessageBox.Show("Process is about to begin");
+
+			for (int i = 0; i < k; i++)
+			{
+				//System.Windows.Forms.MessageBox.Show("Press Enter to get point: " + i.ToString());
+
+				GetPoint();
+
 
 			}
+
+
+			System.Windows.Forms.MessageBox.Show("DataBase created Succesfully");
+
+
+
 		}
 
 
@@ -256,6 +274,7 @@ namespace Geomagnetic_Sensor_GUI_WAF_
 			Inicializar_sesion_real_deal.Enabled = false;
 
 			Build_PointDB();
+			consoleTxt_box.AppendText(" " + PointDB.Count.ToString());
 
 			Inicializar_sesion_real_deal.Enabled = true;
 
@@ -275,13 +294,14 @@ namespace Geomagnetic_Sensor_GUI_WAF_
 
 			serialPort1.PortName = EnterCOMTxtB.Text;
 
+
 			try
 			{
 
 				serialPort1.Open();
 				Status_Port.Text = "Port succesfully opened";
 
-
+				serialPort1.Encoding = Encoding.GetEncoding("Windows-1252");
 
 
 			}

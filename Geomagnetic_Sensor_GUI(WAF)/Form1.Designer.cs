@@ -311,6 +311,7 @@
 			this.EnterCOMTxtB.Name = "EnterCOMTxtB";
 			this.EnterCOMTxtB.Size = new System.Drawing.Size(100, 23);
 			this.EnterCOMTxtB.TabIndex = 1;
+			this.EnterCOMTxtB.Text = "COM10";
 			// 
 			// GetPortTxtB
 			// 
@@ -325,7 +326,11 @@
 			// serialPort1
 			// 
 			this.serialPort1.BaudRate = 115200;
-			this.serialPort1.ReadTimeout = 1;
+			this.serialPort1.DtrEnable = true;
+			this.serialPort1.PortName = "COM10";
+			this.serialPort1.ReadTimeout = 500;
+			this.serialPort1.RtsEnable = true;
+			this.serialPort1.WriteTimeout = 500;
 			// 
 			// eventLog1
 			// 
@@ -342,8 +347,8 @@
 			this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
 			this.ClientSize = new System.Drawing.Size(1002, 551);
 			this.Controls.Add(this.btns_panel);
-			this.Controls.Add(this.real_deal_panel);
 			this.Controls.Add(this.config_panel);
+			this.Controls.Add(this.real_deal_panel);
 			this.Name = "Form1";
 			this.Text = "Form1";
 			this.panel4.ResumeLayout(false);
@@ -365,7 +370,6 @@
 		private System.Windows.Forms.Button about_btn;
 		private System.Windows.Forms.Panel btns_panel;
 		private System.Windows.Forms.Panel config_panel;
-		private System.IO.Ports.SerialPort serialPort1;
 		private System.Diagnostics.EventLog eventLog1;
 		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.Button AcceptCOM_Btn;
@@ -385,6 +389,7 @@
 		private System.Windows.Forms.Panel about_panel;
 		private System.Windows.Forms.ComboBox comboBox1;
 		private System.ComponentModel.BackgroundWorker backgroundWorker1;
+		public System.IO.Ports.SerialPort serialPort1;
 	}
 }
 
